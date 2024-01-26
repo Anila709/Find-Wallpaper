@@ -1,10 +1,13 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ionicons/ionicons.dart';
+import 'package:wallpaper_app_ui/bloc/wallpaper_bloc.dart';
+import 'package:wallpaper_app_ui/bloc/wallpaper_event.dart';
+import 'package:wallpaper_app_ui/bloc/wallpaper_state.dart';
 import 'package:wallpaper_app_ui/models/category_model.dart';
 import 'package:wallpaper_app_ui/models/color_model.dart';
-import 'package:wallpaper_app_ui/models/wallpaper_model.dart';
-import 'package:http/http.dart' as http;
 import 'package:wallpaper_app_ui/screens/searched_wallpaper_screen.dart';
 import 'package:wallpaper_app_ui/screens/wallpaper_details.dart';
 
@@ -16,17 +19,22 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-
-   List<CatergoryModel> listdata=[
-    CatergoryModel(name: "Nature", image:Image.asset("assets/images/img1.jpg")),
-    CatergoryModel(name: "Abstract", image:Image.asset("assets/images/img2.jpg")),
-    CatergoryModel(name: "Water", image:Image.asset("assets/images/img3.jpg")),
-    CatergoryModel(name: "Ocean", image:Image.asset("assets/images/img4.jpg")),
-    CatergoryModel(name: "Forest", image:Image.asset("assets/images/img5.jpg")),
-    CatergoryModel(name: "Heaven", image:Image.asset("assets/images/img6.jpg")),
-    CatergoryModel(name: "Coconut Tree", image:Image.asset("assets/images/img7.jpg")),
-    CatergoryModel(name: "Flower", image:Image.asset("assets/images/img8.jpg")),
-   ]; 
+  List<CatergoryModel> listdata = [
+    CatergoryModel(
+        name: "Nature", image: Image.asset("assets/images/img1.jpg")),
+    CatergoryModel(
+        name: "Abstract", image: Image.asset("assets/images/img2.jpg")),
+    CatergoryModel(name: "Water", image: Image.asset("assets/images/img3.jpg")),
+    CatergoryModel(name: "Ocean", image: Image.asset("assets/images/img4.jpg")),
+    CatergoryModel(
+        name: "Forest", image: Image.asset("assets/images/img5.jpg")),
+    CatergoryModel(
+        name: "Heaven", image: Image.asset("assets/images/img6.jpg")),
+    CatergoryModel(
+        name: "Coconut Tree", image: Image.asset("assets/images/img7.jpg")),
+    CatergoryModel(
+        name: "Flower", image: Image.asset("assets/images/img8.jpg")),
+  ];
   // final List<Map<String, dynamic>> listdata = [
   //   {
   //     "name": "Nature",
@@ -75,13 +83,13 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
 
   //Future<WallpaperDataModel?>? mData;
-  Future<WallpaperDataModel?>? mTrendingData;
+  //Future<WallpaperDataModel?>? mTrendingData;
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-
-    mTrendingData = getTrendingWallpaper();
+    BlocProvider.of<TrendingWallpaperBloc>(context).add(GetTrendingWallpaper());
+    //mTrendingData = getTrendingWallpaper();
   }
 
   @override
@@ -107,106 +115,154 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             height: MediaQuery.of(context).size.height,
             width: MediaQuery.of(context).size.width,
-            child: Padding(
-              padding: const EdgeInsets.only(left: 20, right: 20, top: 35),
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    searchUI(),
-                    SizedBox(
-                      height: 15,
-                    ),
-                    Text(
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(left: 16, right: 16, top: 32),
+                    child: searchUI(),
+                  ),
+                  SizedBox(
+                    height: 8,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 16, right: 16),
+                    child: Text(
                       "Best of the month",
                       style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold,fontFamily: 'Poppins'),
                     ),
-                    SizedBox(
-                      height: 15,
-                    ),
-                    SizedBox(
-                        height: 200,
-                        child: FutureBuilder<WallpaperDataModel?>(
-                            future: mTrendingData,
-                            builder: (_, snapshot) {
-                              if (snapshot.connectionState ==
-                                  ConnectionState.waiting) {
-                                return Center(
-                                  child: CircularProgressIndicator(),
-                                );
-                              } else if (snapshot.hasError) {
-                                return Center(
-                                  child: Text("${snapshot.error.toString()}"),
-                                );
-                              } else if (snapshot.hasData) {
-                                var data = snapshot.data!;
-                                return snapshot.data != null &&
-                                        snapshot.data!.photos!.isNotEmpty
-                                    ? ListView.builder(
-                                        scrollDirection: Axis.horizontal,
-                                        itemCount: data.photos!.length,
-                                        itemBuilder: (_, index) {
-                                          var eachPhoto = data
-                                              .photos![index].src!.portrait!;
-                                          return Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: InkWell(
-                                              onTap: () {
-                                                navigateToDetailpage(eachPhoto);
-                                              },
-                                              child: ClipRRect(
-                                                borderRadius:
-                                                    BorderRadius.circular(11),
-                                                child: Image.network(
-                                                  eachPhoto,
-                                                  fit: BoxFit.fill,
-                                                ),
-                                              ),
-                                            ),
-                                          );
-                                        })
-                                    : Container(
-                                        child: Center(
-                                          child: Text('No Wallpaper!!'),
+                  ),
+                  SizedBox(
+                    height: 8,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 16),
+                    child: SizedBox(
+                      height: 200,
+                      child: BlocBuilder<TrendingWallpaperBloc,
+                          TrendingWallpaperState>(builder: (context, state) {
+                        if (state is TrendingWallpaperLoadingState) {
+                          return Center(child: CircularProgressIndicator());
+                        } else if (state is TrendingWallpaperErrorState) {
+                          return Center(
+                            child: Text('Error :${state.errorMsg}'),
+                          );
+                        } else if (state is TrendingWallpaperLoadedState) {
+                          var data = state.mData;
+                          return SizedBox(
+                            height: 200,
+                            child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: data.photos!.length,
+                                itemBuilder: (_, index) {
+                                  var eachPhoto =
+                                      data.photos![index].src!.portrait!;
+                                  return Padding(
+                                    padding: const EdgeInsets.only(right: 8.0),
+                                    child: InkWell(
+                                      onTap: () {
+                                        navigateToDetailpage(eachPhoto);
+                                      },
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(11),
+                                        child: Image.network(
+                                          eachPhoto,
+                                          fit: BoxFit.fill,
                                         ),
-                                      );
-                              }
-                              return Container();
-                            })),
-                    SizedBox(
-                      height: 15,
+                                      ),
+                                    ),
+                                  );
+                                }),
+                          );
+                        }
+                        return Container();
+                        // return SizedBox(
+                        //     height: 200,
+                        //     child: FutureBuilder<WallpaperDataModel?>(
+                        //         future: mTrendingData,
+                        //         builder: (_, snapshot) {
+                        //           if (snapshot.connectionState ==
+                        //               ConnectionState.waiting) {
+                        //             return Center(
+                        //               child: CircularProgressIndicator(),
+                        //             );
+                        //           } else if (snapshot.hasError) {
+                        //             return Center(
+                        //               child: Text("${snapshot.error.toString()}"),
+                        //             );
+                        //           } else if (snapshot.hasData) {
+                        //             var data = snapshot.data!;
+                        //             return snapshot.data != null &&
+                        //                     snapshot.data!.photos!.isNotEmpty
+                        //                 ? ListView.builder(
+                        //                     scrollDirection: Axis.horizontal,
+                        //                     itemCount: data.photos!.length,
+                        //                     itemBuilder: (_, index) {
+                        //                       var eachPhoto = data
+                        //                           .photos![index].src!.portrait!;
+                        //                       return Padding(
+                        //                         padding: const EdgeInsets.all(8.0),
+                        //                         child: InkWell(
+                        //                           onTap: () {
+                        //                             navigateToDetailpage(eachPhoto);
+                        //                           },
+                        //                           child: ClipRRect(
+                        //                             borderRadius:
+                        //                                 BorderRadius.circular(11),
+                        //                             child: Image.network(
+                        //                               eachPhoto,
+                        //                               fit: BoxFit.fill,
+                        //                             ),
+                        //                           ),
+                        //                         ),
+                        //                       );
+                        //                     })
+                        //                 : Container(
+                        //                     child: Center(
+                        //                       child: Text('No Wallpaper!!'),
+                        //                     ),
+                        //                   );
+                        //           }
+                        //           return Container();
+                        //         }));
+                      }),
                     ),
-                    Text(
+                  ),
+                  SizedBox(
+                    height: 8,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 16),
+                    child: Text(
                       "The color tone",
                       style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 20,fontFamily: 'Poppins'),
                     ),
-                    SizedBox(
-                      height: 15,
-                    ),
-                    SizedBox(
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 16),
+                    child: SizedBox(
                       width: double.infinity,
-                      height: 70,
-                      child: ListView.builder(
+                      height: 72,
+                      child: ListView.builder( 
                           scrollDirection: Axis.horizontal,
                           itemCount: mColorList.length,
                           itemBuilder: (_, index) {
                             return InkWell(
                               onTap: () {
-                                if(mController.text.isNotEmpty)
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            SearchedWallpaperScreen(
-                                              searchQuery: mController.text
-                                                  .toLowerCase(),
-                                              colorCode:
-                                                  mColorList[index].colorCode!,
-                                            )));
-                                            setState(() {
-                                              
-                                            });
+                                if (mController.text.isNotEmpty)
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              SearchedWallpaperScreen(
+                                                searchQuery: mController.text
+                                                    .toLowerCase(),
+                                                colorCode: mColorList[index]
+                                                    .colorCode!,
+                                              )));
+                                setState(() {});
                                 // mData = getWallpaper(
                                 //     query: mController.text.toString(),
                                 //     colorCode: mColorList[index].colorCode!);
@@ -214,90 +270,98 @@ class _HomeScreenState extends State<HomeScreen> {
                               },
                               child: Container(
                                 margin: EdgeInsets.all(11),
-                                width: 50,
-                                height: 50,
+                                width: 56,
+                                height: 56,
                                 decoration: BoxDecoration(
                                     border: Border.all(color: Colors.grey),
-                                    borderRadius: BorderRadius.circular(11),
+                                    borderRadius: BorderRadius.circular(8),
                                     color: mColorList[index].colorValue),
                               ),
                             );
                           }),
                     ),
-                    SizedBox(
-                      height: 15,
-                    ),
-                    Text(
-                      "Categories",
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                    ),
-                    SizedBox(
-                      height: 15,
-                    ),
-                    Expanded(
-                      child: SizedBox(
-                        height: 600,
-                        width: double.infinity,
-                        child: GridView.builder(
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2, // Number of columns
-                            childAspectRatio:
-                                2, // Aspect ratio (width / height) of each grid item
-                            mainAxisSpacing:
-                                10, // Vertical spacing between grid items
-                            crossAxisSpacing:
-                                10, // Horizontal spacing between grid items
-                            // Set the height of each grid item
+                  ),
+                  
+                  Text(
+                    "Categories",
+                    style:
+                        TextStyle(fontWeight: FontWeight.bold, fontSize: 20,fontFamily: 'Poppins'),
+                  ),
+                  SizedBox(
+                    height: 8,
+                  ),
+                  Expanded(
+                    child: SizedBox(
+                      height: 600,
+                      width: double.infinity,
+                      child: GridView.builder(
+                        gridDelegate:
+                            SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2, // Number of columns
+                          childAspectRatio:
+                              2, // Aspect ratio (width / height) of each grid item
+                          mainAxisSpacing:
+                              8, // Vertical spacing between grid items
+                          crossAxisSpacing:
+                              8, // Horizontal spacing between grid items
+                          // Set the height of each grid item
 
-                            mainAxisExtent: 90,
-                          ),
-                          itemCount: listdata.length, // Number of items
-                          itemBuilder: (BuildContext context, int index) {
-                            return InkWell(
-                              onTap: () {
-                                Navigator.push(context, MaterialPageRoute(builder: (context)=>SearchedWallpaperScreen(searchQuery: listdata[index].name!)));
-                              },
-                              child: Container(
-                                  //margin: EdgeInsets.only(right: 10),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(10),
-                                    image: DecorationImage(
-                                      image: listdata[index].image!.image,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                  child: Container(
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(10),
-                                        color: Colors.black.withOpacity(0.5),
-                                      ),
-                                      child: Center(
-                                          child: Text(
-                                        listdata[index].name!,
-                                        style: TextStyle(
-                                            //fontStyle: FontStyle.italic,
-                                            color: Colors.white,
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.w200,
-                                            letterSpacing: 3),
-                                      )))),
-                            );
-                          },
+                          mainAxisExtent: 90,
                         ),
+                        itemCount: listdata.length, // Number of items
+                        itemBuilder: (BuildContext context, int index) {
+                          return InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          SearchedWallpaperScreen(
+                                              searchQuery:
+                                                  listdata[index].name!)));
+                            },
+                            child: Container(
+                                //margin: EdgeInsets.only(right: 10),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
+                                  image: DecorationImage(
+                                    image: listdata[index].image!.image,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                                child: Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(10),
+                                      color: Colors.black.withOpacity(0.5),
+                                    ),
+                                    child: Center(
+                                        child: Text(
+                                      listdata[index].name!,
+                                      style: TextStyle(
+                                          //fontStyle: FontStyle.italic,
+                                          color: Colors.white,
+                                          fontSize: 20,
+                                          //fontFamily: 'Poppins',
+                                          fontWeight: FontWeight.w200,
+                                          letterSpacing: 3),
+                                    )))),
+                          );
+                        },
                       ),
-                    )
-                  ]),
-            ),
+                    ),
+                  )
+                ]),
           ),
         ),
       ),
     );
   }
-  
-  void navigateToDetailpage(String url){
-    Navigator.push(context, MaterialPageRoute(builder: (context)=>WallpaperDetailsPage(wallUrl: url)));
+
+  void navigateToDetailpage(String url) {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => WallpaperDetailsPage(wallUrl: url)));
   }
 
   //search text field ui..
@@ -322,7 +386,7 @@ class _HomeScreenState extends State<HomeScreen> {
               cursorColor: Colors.grey,
               decoration: InputDecoration(
                 hintText: 'Find Wallpaper',
-                hintStyle: TextStyle(color: Colors.grey),
+                hintStyle: TextStyle(color: Colors.grey,fontFamily: 'Poppins'),
                 border: InputBorder.none,
               ),
             ),
@@ -343,10 +407,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 setState(() {});
               }
             },
-            icon: Icon(
-              Icons.search,
-              color: Colors.grey,
-            ),
+            icon: Icon(Ionicons.search,color: Colors.grey,)
           ),
         ],
       ),
@@ -370,18 +431,18 @@ class _HomeScreenState extends State<HomeScreen> {
   //   }
   // }
 
-  Future<WallpaperDataModel?> getTrendingWallpaper() async {
-    var myApiKey = "lLGZiqQUy25YBe9qTDs7DSbHpO7X72BPg6FkAd9IG0VxSRWbhXg5EirB";
-    var uri = Uri.parse("https://api.pexels.com/v1/curated");
-    var response = await http.get(uri, headers: {
-      "Authorization": myApiKey,
-    });
-    if (response.statusCode == 200) {
-      var rawData = jsonDecode(response.body);
-      var data = WallpaperDataModel.fromJson(rawData);
-      return data;
-    } else {
-      return null;
-    }
-  }
+  // Future<WallpaperDataModel?> getTrendingWallpaper() async {
+  //   var myApiKey = "lLGZiqQUy25YBe9qTDs7DSbHpO7X72BPg6FkAd9IG0VxSRWbhXg5EirB";
+  //   var uri = Uri.parse("https://api.pexels.com/v1/curated");
+  //   var response = await http.get(uri, headers: {
+  //     "Authorization": myApiKey,
+  //   });
+  //   if (response.statusCode == 200) {
+  //     var rawData = jsonDecode(response.body);
+  //     var data = WallpaperDataModel.fromJson(rawData);
+  //     return data;
+  //   } else {
+  //     return null;
+  //   }
+  // }
 }

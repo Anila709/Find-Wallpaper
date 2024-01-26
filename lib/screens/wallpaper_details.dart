@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ionicons/ionicons.dart';
 
 class WallpaperDetailsPage extends StatelessWidget {
   const WallpaperDetailsPage({super.key,required this.wallUrl});
@@ -9,34 +10,34 @@ class WallpaperDetailsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Hero(
-        tag: Duration(seconds: 2),
-        child: Container(
-          width: double.infinity,
-          height: double.infinity,
-          child: Stack(
-            
-            children: [
-              Expanded(child: Image.network(wallUrl,fit: BoxFit.cover,)),
-              Positioned(
-                bottom: 25,
-                left: 0,
-                right: 0,
-                child: SizedBox(
-                  width: double.infinity,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      OptionWidget(icon: Icons.info,name: 'Info'),
-                      OptionWidget(icon: Icons.download,name: 'Save'),
-                      OptionWidget(icon: Icons.brush,name: 'Apply'),
-                    ],
-                  ),
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        child: Stack(
+          
+          children: [
+            SizedBox(
+              height: double.infinity,
+              width: double.infinity,
+              child: Image.network(wallUrl,fit: BoxFit.fill,)),
+            Positioned(
+              bottom: 25,
+              left: 0,
+              right: 0,
+              child: SizedBox(
+                width: double.infinity,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    OptionWidget(icon: Ionicons.information_circle,name: 'Info'),
+                    OptionWidget(icon: Ionicons.download,name: 'Save'),
+                    OptionWidget(icon: Ionicons.brush,name: 'Apply'),
+                  ],
                 ),
-              )
-            ],
-          )),
-      ),
+              ),
+            )
+          ],
+        )),
     );
   }
 }
